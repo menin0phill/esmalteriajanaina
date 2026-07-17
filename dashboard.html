@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Administrativo | Esmalteria Janaína Barbosa</title>
+  
+  <!-- CSS Link -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-page">
+
+  <div class="container">
+    <!-- Header Admin -->
+    <header style="position: absolute; background: transparent; box-shadow: none; border: none; backdrop-filter: none;">
+      <!-- Hidden logo and hamburger details since we are styling the admin-header container directly on the page grid -->
+    </header>
+
+    <div class="admin-header">
+      <div class="logo" style="font-size: 1.8rem;">
+        <span>Painel</span> Janaína Barbosa
+      </div>
+      <a href="index.html" class="btn btn-secondary">
+        <!-- Back Icon SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" style="width: 16px; height: 16px; margin-right: 8px; fill: currentColor;">
+          <path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H109.2L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/>
+        </svg>
+        Voltar ao Site
+      </a>
+    </div>
+
+    <!-- Alert Success Notification -->
+    <div id="alertSuccess" class="alert alert-success">
+      Alterações salvas com sucesso!
+    </div>
+
+    <!-- Admin Content Grid -->
+    <div class="admin-grid">
+      
+      <!-- Left Column: Add/Edit Form -->
+      <div class="admin-card">
+        <h3 id="formTitle" class="admin-card-title">Adicionar Serviço</h3>
+        
+        <form id="serviceForm">
+          <!-- Hidden ID for edit mode -->
+          <input type="hidden" id="serviceId">
+          
+          <div class="form-group">
+            <label for="serviceTitle">Nome do Serviço</label>
+            <input type="text" id="serviceTitle" class="form-control" placeholder="Ex: Plástica dos Pés Premium" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="servicePrice">Valor / Preço</label>
+            <input type="text" id="servicePrice" class="form-control" placeholder="Ex: R$ 140,00 (ou R$ 150,00 com Onicofose)" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="serviceImage">URL da Imagem (Unsplash ou local)</label>
+            <input type="url" id="serviceImage" class="form-control" placeholder="Ex: https://images.unsplash.com/photo-..." required>
+          </div>
+          
+          <div class="form-group">
+            <label for="serviceDesc">Descrição Curta</label>
+            <textarea id="serviceDesc" class="form-control" rows="4" placeholder="Descreva os detalhes do serviço de forma atraente..." required></textarea>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn btn-gold" style="flex: 1; padding: 12px 24px; font-size: 0.95rem;">Salvar Serviço</button>
+            <button type="button" id="btnCancelEdit" class="btn btn-secondary" style="display: none; padding: 12px 20px; font-size: 0.95rem;">Cancelar</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Right Column: Services List -->
+      <div class="admin-card">
+        <h3 class="admin-card-title">Serviços Cadastrados</h3>
+        
+        <div id="adminServicesList" class="services-list">
+          <!-- Os itens de serviços cadastrados serão renderizados via JS -->
+        </div>
+
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px dashed rgba(197, 168, 128, 0.3); text-align: right;">
+          <button type="button" id="btnRestoreDefaults" class="btn btn-danger-outline" style="padding: 10px 24px; font-size: 0.85rem; border-radius: var(--radius-sm);">
+            Restaurar Serviços Padrão
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CRUD Control Script -->
+  <script>
+    // Initial Fallback Default Services
+    const DEFAULT_SERVICES = [
+      {
+        id: "pedicure-sem-esmalte",
+        title: "Pedicure Sem Esmaltação",
+        desc: "Cutilagem simples, remoção cuidadosa do excesso de cutículas e higienização profunda. Ideal para quem busca um aspecto limpo, saudável e extremamente natural.",
+        price: "R$ 45,00",
+        image: "https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=500&auto=format&fit=crop"
+      },
+      {
+        id: "pedicure-tradicional",
+        title: "Pedicure Tradicional Premium",
+        desc: "Procedimento completo de autocuidado. Inclui cutilagem russa, detox da lâmina ungueal, polimento sutil, esmaltação perfeita e hidratação profunda.",
+        price: "R$ 60,00",
+        image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=500&auto=format&fit=crop"
+      },
+      {
+        id: "pedicure-onicofose",
+        title: "Pedicure com Onicofose",
+        desc: "Alívio imediato para excesso de pele nas laterais das unhas, sensibilidade e dor. Cuidados profundos, higienização rigorosa, hidratação e massagem relaxante no massageador de pés (10 a 15 min). Duração de 1h40 a 2h.",
+        price: "R$ 80,00",
+        image: "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?q=80&w=500&auto=format&fit=crop"
+      },
+      {
+        id: "esmaltacao-gel",
+        title: "Esmaltação em Gel",
+        desc: "Esmaltação moderna com secagem em cabine LED. Proporciona brilho espelhado intenso e durabilidade incrível. Manutenção recomendada em até 30 dias.",
+        price: "R$ 95,00 (ou R$ 110,00 com Onicofose)",
+        image: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?q=80&w=500&auto=format&fit=crop"
+      },
+      {
+        id: "plastica-pes",
+        title: "Plástica dos Pés",
+        desc: "Saúde, renovação celular e alívio completo. Conta com isolamento plantar, remoção indolor de calosidades acumuladas, lixamento elétrico preciso, aplicação de parafina fria e massagem relaxante com massageador.",
+        price: "R$ 140,00 (ou R$ 150,00 com Onicofose)",
+        image: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?q=80&w=500&auto=format&fit=crop"
+      },
+      {
+        id: "terapia-podal",
+        title: "Terapia Podal",
+        desc: "Tratamento ultra-profundo ideal para pés com rachaduras, ressecamento severo ou cansaço acumulado. Aplicação de emoliente especial, lixamento, hidromassagem morna enriquecida com rosas e sais minerais, finalizado com massageador de pés.",
+        price: "R$ 160,00 (ou R$ 170,00 com Onicofose)",
+        image: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?q=80&w=500&auto=format&fit=crop"
+      },
+      {
+        id: "reconstrucao-podal",
+        title: "Reconstrução Podal",
+        desc: "Técnica restauradora de unhas com quebras profundas, deformidades ou fragilidades extremas. Utiliza tips podal de alta tecnologia ou molde F1 para reconstruir a ungueal com naturalidade. *Valor adicional ao procedimento base.*",
+        price: "Dedão (Hálux) R$ 25,00 cada | Pé Completo a partir de R$ 60,00",
+        image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=500&auto=format&fit=crop"
+      }
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const serviceForm = document.getElementById('serviceForm');
+      const serviceIdInput = document.getElementById('serviceId');
+      const serviceTitleInput = document.getElementById('serviceTitle');
+      const servicePriceInput = document.getElementById('servicePrice');
+      const serviceImageInput = document.getElementById('serviceImage');
+      const serviceDescInput = document.getElementById('serviceDesc');
+      const formTitle = document.getElementById('formTitle');
+      const btnCancelEdit = document.getElementById('btnCancelEdit');
+      const btnRestoreDefaults = document.getElementById('btnRestoreDefaults');
+      const alertSuccess = document.getElementById('alertSuccess');
+      const adminServicesList = document.getElementById('adminServicesList');
+
+      // Helper function to show alert
+      const showAlert = (message) => {
+        alertSuccess.innerText = message;
+        alertSuccess.style.display = 'block';
+        setTimeout(() => {
+          alertSuccess.style.display = 'none';
+        }, 3000);
+      };
+
+      // Retrieve services from localStorage
+      const getServices = () => {
+        if (!localStorage.getItem('esmalteria_services')) {
+          localStorage.setItem('esmalteria_services', JSON.stringify(DEFAULT_SERVICES));
+        }
+        return JSON.parse(localStorage.getItem('esmalteria_services'));
+      };
+
+      // Save services to localStorage
+      const saveServices = (services) => {
+        localStorage.setItem('esmalteria_services', JSON.stringify(services));
+      };
+
+      // Reset Form State
+      const resetForm = () => {
+        serviceForm.reset();
+        serviceIdInput.value = '';
+        formTitle.innerText = 'Adicionar Serviço';
+        btnCancelEdit.style.display = 'none';
+      };
+
+      // Render Admin list view
+      const renderServices = () => {
+        const services = getServices();
+        adminServicesList.innerHTML = '';
+
+        if (services.length === 0) {
+          adminServicesList.innerHTML = '<p style="text-align: center; color: var(--text-muted); font-size: 0.95rem; padding: 24px 0;">Nenhum serviço cadastrado.</p>';
+          return;
+        }
+
+        services.forEach(service => {
+          const item = document.createElement('div');
+          item.className = 'admin-service-item';
+          item.innerHTML = `
+            <img src="${service.image || 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?q=80&w=500&auto=format&fit=crop'}" alt="${service.title}" class="admin-service-img">
+            <div class="admin-service-info">
+              <h4 class="admin-service-name">${service.title}</h4>
+              <p class="admin-service-price">${service.price}</p>
+            </div>
+            <div class="admin-service-actions">
+              <button class="btn-action btn-action-edit" data-id="${service.id}" title="Editar">
+                <!-- Pencil SVG Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                  <path d="M471.6 21.7c-21.9-21.9-57.3-21.9-79.2 0L362.3 51.7l97.9 97.9 30.1-30.1c21.9-21.9 21.9-57.3 0-79.2L471.6 21.7zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L437.7 172.3 339.7 74.3 172.4 241.7zM96 64C43 64 0 107 0 160V416c0 53 43 96 96 96H352c53 0 96-43 96-96V320c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H96z"/>
+                </svg>
+              </button>
+              <button class="btn-action btn-action-delete" data-id="${service.id}" title="Excluir">
+                <!-- Trash SVG Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                  <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.7 462.2c1.6 25.3 22.6 45.8 47.9 45.8H346.4c25.3 0 46.3-20.5 47.9-45.8L416 128z"/>
+                </svg>
+              </button>
+            </div>
+          `;
+          adminServicesList.appendChild(item);
+        });
+
+        // Attach edit button listeners
+        document.querySelectorAll('.btn-action-edit').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = btn.getAttribute('data-id');
+            const services = getServices();
+            const service = services.find(s => s.id === id);
+
+            if (service) {
+              serviceIdInput.value = service.id;
+              serviceTitleInput.value = service.title;
+              servicePriceInput.value = service.price;
+              serviceImageInput.value = service.image;
+              serviceDescInput.value = service.desc;
+
+              formTitle.innerText = 'Editar Serviço';
+              btnCancelEdit.style.display = 'block';
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          });
+        });
+
+        // Attach delete button listeners
+        document.querySelectorAll('.btn-action-delete').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            const services = getServices();
+            const service = services.find(s => s.id === id);
+
+            if (service && confirm(`Deseja realmente excluir o serviço "${service.title}"?`)) {
+              const updatedServices = services.filter(s => s.id !== id);
+              saveServices(updatedServices);
+              renderServices();
+              showAlert('Serviço excluído com sucesso!');
+              resetForm();
+            }
+          });
+        });
+      };
+
+      // Form Submission (Add or Edit)
+      serviceForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const id = serviceIdInput.value;
+        const title = serviceTitleInput.value.trim();
+        const price = servicePriceInput.value.trim();
+        const image = serviceImageInput.value.trim();
+        const desc = serviceDescInput.value.trim();
+
+        const services = getServices();
+
+        if (id) {
+          // Edit Mode
+          const index = services.findIndex(s => s.id === id);
+          if (index !== -1) {
+            services[index] = { id, title, price, image, desc };
+            saveServices(services);
+            showAlert('Serviço atualizado com sucesso!');
+          }
+        } else {
+          // Add Mode
+          const newId = 'service-' + Date.now();
+          services.push({ id: newId, title, price, image, desc });
+          saveServices(services);
+          showAlert('Novo serviço adicionado com sucesso!');
+        }
+
+        resetForm();
+        renderServices();
+      });
+
+      // Cancel Edit mode
+      btnCancelEdit.addEventListener('click', resetForm);
+
+      // Restore Defaults
+      btnRestoreDefaults.addEventListener('click', () => {
+        if (confirm('Deseja realmente restaurar os 7 serviços originais? Isso apagará as alterações personalizadas.')) {
+          localStorage.setItem('esmalteria_services', JSON.stringify(DEFAULT_SERVICES));
+          renderServices();
+          resetForm();
+          showAlert('Serviços padrão restaurados com sucesso!');
+        }
+      });
+
+      // Initial Render
+      renderServices();
+    });
+  </script>
+</body>
+</html>
