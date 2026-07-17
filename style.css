@@ -150,11 +150,12 @@ section {
   border: none;
   cursor: pointer;
   transition: var(--transition-bounce);
+  color: #FFFFFF !important;
 }
 
 .btn-primary {
   background: linear-gradient(135deg, var(--text-marsala) 0%, var(--text-marsala-light) 100%);
-  color: var(--white-glass);
+  color: #FFFFFF !important;
   box-shadow: var(--shadow-marsala);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -162,7 +163,7 @@ section {
 .btn-primary:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 30px rgba(90, 24, 39, 0.35);
-  color: #FFFFFF;
+  color: #FFFFFF !important;
 }
 
 .btn-primary:active {
@@ -171,7 +172,7 @@ section {
 
 .btn-gold {
   background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-dark) 100%);
-  color: #FFFFFF;
+  color: #FFFFFF !important;
   box-shadow: var(--shadow-gold);
 }
 
