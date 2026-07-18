@@ -395,13 +395,13 @@ header.scrolled .nav-wrapper {
   position: absolute;
   bottom: 30px;
   left: -30px;
-  background: var(--white-glass);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: var(--border-gold);
   padding: 16px 24px;
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-light);
+  box-shadow: var(--shadow-medium);
   display: flex;
   align-items: center;
   gap: 12px;
